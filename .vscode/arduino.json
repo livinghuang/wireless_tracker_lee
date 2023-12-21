@@ -1,0 +1,6 @@
+{
+    "port": "/dev/tty.usbmodem843101",
+    "configuration": "PSRAM=disabled,FlashMode=qio,FlashSize=4M,LoopCore=1,EventsCore=1,USBMode=hwcdc,CDCOnBoot=cdc,MSCOnBoot=default,DFUOnBoot=default,UploadMode=default,PartitionScheme=default,CPUFreq=240,UploadSpeed=921600,DebugLevel=verbose,LORAWAN_REGION=0,LoRaWanDebugLevel=3,LORAWAN_DEVEUI=0,LORAWAN_PREAMBLE_LENGTH=0",
+    "board": "Heltec-esp32:esp32:wireless_track",
+    "sketch": "wireless_tracker_lee.ino"
+}

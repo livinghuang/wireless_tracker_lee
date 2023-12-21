@@ -1,13 +1,55 @@
+/*
+ * HelTec Automation(TM) WIFI_LoRa_32 factory test code, witch includ
+ * follow functions:
+ *
+ * - Basic OLED function test;
+ *
+ * - Basic serial port test(in baud rate 115200);
+ *
+ * - LED blink test;
+ *
+ * - WIFI connect and scan test;
+ *
+ * - LoRa Ping-Pong test (DIO0 -- GPIO26 interrup check the new incoming messages);
+ *
+ * - Timer test and some other Arduino basic functions.
+ *
+ * by Aaron.Lee from HelTec AutoMation, ChengDu, China
+ * 成都惠利特自动化科技有限公司
+ * https://heltec.org
+ *
+ * this project also realess in GitHub:
+ * https://github.com/HelTecAutomation/Heltec_ESP32
+ */
+
 #include "Arduino.h"
 #include "WiFi.h"
 #include "LoRaWan_APP.h"
 #include <Wire.h>
 #include "HT_st7735.h"
 #include "HT_TinyGPS++.h"
-#include "sdd.h"
-#include "led.h"
-#include "button.h"
-#include "buzzer.h"
+#include "FS.h"
+#include "SD.h"
+#include "SPI.h"
+#include "esp32-hal-rgb-led.h"
+// Define the GPIO pin where the WS2812 LED data input is connected
+#define LED_PIN 17 // Replace with your GPIO pin number
+#define BUZZER 46
+#define BUTTON 4
+#define SD_CS 21
+#define SD_SCK 9
+#define SD_MOSI 11
+#define SD_MISO 10
+#define LORA_RST_PIN 12
+
+enum LedColor
+{
+	RED,
+	GREEN,
+	BLUE,
+	WHITE,
+	OFF
+};
 
 typedef enum
 {
@@ -18,6 +60,9 @@ typedef enum
 	LORA_COMMUNICATION_TEST,
 	DEEPSLEEP_TEST,
 	GPS_TEST,
+	LED_TEST,
+	BUZZER_TEST,
+	SD_TEST
 } test_status_t;
 
 HT_st7735 st7735;
@@ -268,13 +313,13 @@ void interrupt_handle(void)
 void VextON(void)
 {
 	pinMode(Vext, OUTPUT);
-	digitalWrite(Vext, HIGH);
+	digitalWrite(Vext, LOW);
 }
 
 void VextOFF(void) // Vext default OFF
 {
 	pinMode(Vext, OUTPUT);
-	digitalWrite(Vext, LOW);
+	digitalWrite(Vext, HIGH);
 }
 
 void enter_deepsleep(void)
@@ -397,137 +442,103 @@ void gps_test(void)
 	}
 }
 
-// void setup()
-// {
-// 	Serial.begin(115200);
-// 	Mcu.begin();
-// 	// st7735.st7735_init();
-// 	// st7735.st7735_fill_screen(ST7735_BLACK);
+void button_off(void)
+{
+	pinMode(BUZZER, OUTPUT);
+	digitalWrite(BUZZER, LOW);
+}
 
-// 	// attachInterrupt(0, interrupt_GPIO0, FALLING);
-// 	// resendflag = false;
-// 	// deepsleepflag = false;
-// 	// interrupt_flag = false;
+void buzzer_test(void)
+{
+	pinMode(BUZZER, OUTPUT);
+	pinMode(BUTTON, INPUT);
+	if (digitalRead(BUTTON))
+	{
+		digitalWrite(BUZZER, HIGH);
+	}
+	else
+	{
+		digitalWrite(BUZZER, LOW);
+	}
+}
 
-// 	// chipid = ESP.getEfuseMac();																	 // The chip ID is essentially its MAC address(length: 6 bytes).
-// 	// Serial.printf("ESP32ChipID=%04X", (uint16_t)(chipid >> 32)); // print High 2 bytes
-// 	// Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
+void led_test(void)
+{
+	// Example: Set WS2812 LED to Green
+	neopixelWrite(LED_PIN, 255, 0, 0);
+	delay(1000);
 
-// 	// test_status = WIFI_CONNECT_TEST_INIT;
-// 	// led_setting();
-// 	// button_setting();
-// 	// buzzer_setting();
-// 	// sd_setting();
+	// Example: Set WS2812 LED to Red
+	neopixelWrite(LED_PIN, 0, 255, 0);
+	delay(1000);
 
-// 	Serial.begin(115200);
-// 	pinMode(46, OUTPUT);
-// 	digitalWrite(46, LOW);
-// 	pinMode(LORA_RST_PIN, OUTPUT);
-// 	digitalWrite(LORA_RST_PIN, LOW);
+	// Example: Set WS2812 LED to Blue
+	neopixelWrite(LED_PIN, 0, 0, 255);
+	delay(1000);
 
-// 	pinMode(Vext, OUTPUT);
-// 	digitalWrite(Vext, HIGH);
+	// Example: Set WS2812 LED to White
+	neopixelWrite(LED_PIN, 255, 255, 255);
+	delay(1000);
+}
 
-// 	sdInitialized = sdd_setting();
+bool sd_setting()
+{
+	SPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
+	if (!SD.begin(SD_CS, SPI))
+	{
+		return false;
+	}
+	return true;
+}
 
-// 	if (sdInitialized)
-// 	{
-// 		Serial.println("SD卡初始化成功");
-// 	}
-// 	else
-// 	{
-// 		Serial.println("SD卡初始化失敗");
-// 	}
-// }
+void sd_test(void)
+{
 
-// void loop()
-// {
+	Radio.Sleep();
+	SPI.end();
+	pinMode(RADIO_DIO_1, ANALOG);
+	pinMode(RADIO_NSS, ANALOG);
+	pinMode(RADIO_RESET, ANALOG);
+	pinMode(RADIO_BUSY, ANALOG);
+	pinMode(LORA_CLK, ANALOG);
+	pinMode(LORA_MISO, ANALOG);
+	pinMode(LORA_MOSI, ANALOG);
 
-// 	File file = SD.open("/test.txt");
-// 	if (file)
-// 	{
-// 		Serial.println("Successfully opened file:");
-// 		while (file.available())
-// 		{
-// 			Serial.write(file.read());
-// 		}
-// 		file.close();
-// 	}
-// 	else
-// 	{
-// 		Serial.println("Failed to open file");
-// 	}
+	pinMode(LORA_RST_PIN, OUTPUT);
+	digitalWrite(LORA_RST_PIN, LOW);
 
-// 	File writeFile = SD.open("/test.txt", FILE_WRITE);
-// 	if (writeFile)
-// 	{
-// 		String data = "Hello, SD card ^_^";
-// 		writeFile.println(data);
-// 		writeFile.close();
-// 		Serial.println("Successfully wrote to file");
-// 	}
-// 	else
-// 	{
-// 		Serial.println("Failed to write to file");
-// 	}
+	Radio.Sleep();
+	SPI.end();
+	pinMode(RADIO_DIO_1, ANALOG);
+	pinMode(RADIO_NSS, ANALOG);
+	pinMode(RADIO_RESET, ANALOG);
+	pinMode(RADIO_BUSY, ANALOG);
+	pinMode(LORA_CLK, ANALOG);
+	pinMode(LORA_MISO, ANALOG);
+	pinMode(LORA_MOSI, ANALOG);
 
-// 	delay(1000);
+	pinMode(LORA_RST_PIN, OUTPUT);
+	digitalWrite(LORA_RST_PIN, LOW);
 
-// 	// interrupt_handle();
-// 	// // led_test();
-// 	// // button_test();
-// 	// // buzzer_test();
-// 	// sd_test();
-// 	// switch (test_status)
-// 	// {
-// 	// case WIFI_CONNECT_TEST_INIT:
-// 	// {
-// 	// 	wifi_connect_init();
-// 	// 	test_status = WIFI_CONNECT_TEST;
-// 	// }
-// 	// case WIFI_CONNECT_TEST:
-// 	// {
-// 	// 	if (wifi_connect_try(1) == true)
-// 	// 	{
-// 	// 		test_status = WIFI_SCAN_TEST;
-// 	// 	}
-// 	// 	wifi_connect_try_num--;
-// 	// 	break;
-// 	// }
-// 	// case WIFI_SCAN_TEST:
-// 	// {
-// 	// 	wifi_scan(1);
-// 	// 	test_status = LORA_TEST_INIT;
-// 	// 	break;
-// 	// }
-// 	// case LORA_TEST_INIT:
-// 	// {
-// 	// 	lora_init();
-// 	// 	test_status = LORA_COMMUNICATION_TEST;
-// 	// 	break;
-// 	// }
-// 	// case LORA_COMMUNICATION_TEST:
-// 	// {
-// 	// 	lora_status_handle();
-// 	// 	break;
-// 	// }
-// 	// case DEEPSLEEP_TEST:
-// 	// {
-// 	// 	enter_deepsleep();
-// 	// 	break;
-// 	// }
-// 	// case GPS_TEST:
-// 	// {
-// 	// 	break;
-// 	// }
-// 	// default:
-// 	// 	break;
-// 	// }
-// }
+	VextON();
+	delay(1000);
+
+	SPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
+
+	if (sd_setting())
+	{
+		Serial.println("SD卡初始化成功");
+	}
+	else
+	{
+		Serial.println("SD卡初始化失敗");
+	}
+}
 
 void setup()
 {
 	Serial.begin(115200);
+	// Mcu.begin();
 	st7735.st7735_init();
 	st7735.st7735_fill_screen(ST7735_BLACK);
 
@@ -540,16 +551,75 @@ void setup()
 	Serial.printf("ESP32ChipID=%04X", (uint16_t)(chipid >> 32)); // print High 2 bytes
 	Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
 
-	test_status = WIFI_CONNECT_TEST_INIT;
-	led_setting();
+	button_off();
+
+	pinMode(LED, OUTPUT);
+	digitalWrite(LED, HIGH);
+	test_status = SD_TEST;
 }
 
 void loop()
 {
-	sd_test();
-	gps_test();
-	lora_init();
-	button_test();
-	buzzer_off();
-	led_test();
+	interrupt_handle();
+	switch (test_status)
+	{
+	case WIFI_CONNECT_TEST_INIT:
+	{
+		wifi_connect_init();
+		test_status = WIFI_CONNECT_TEST;
+	}
+	case WIFI_CONNECT_TEST:
+	{
+		if (wifi_connect_try(1) == true)
+		{
+			test_status = WIFI_SCAN_TEST;
+		}
+		wifi_connect_try_num--;
+		break;
+	}
+	case WIFI_SCAN_TEST:
+	{
+		wifi_scan(1);
+		test_status = LORA_TEST_INIT;
+		break;
+	}
+	case LORA_TEST_INIT:
+	{
+		lora_init();
+		test_status = LORA_COMMUNICATION_TEST;
+		break;
+	}
+	case LORA_COMMUNICATION_TEST:
+	{
+		lora_status_handle();
+		break;
+	}
+	case DEEPSLEEP_TEST:
+	{
+		enter_deepsleep();
+		break;
+	}
+	case GPS_TEST:
+	{
+		gps_test();
+		break;
+	}
+	case LED_TEST:
+	{
+		led_test();
+		break;
+	}
+	case BUZZER_TEST:
+	{
+		buzzer_test();
+		break;
+	}
+	case SD_TEST:
+	{
+		sd_test();
+		break;
+	}
+	default:
+		break;
+	}
 }
