@@ -4,36 +4,11 @@
 			"path": "."
 		},
 		{
-			"path": "../../../Library/Arduino15/packages/Heltec-esp32/hardware/esp32"
+			"path": "../../Library/Arduino15/packages/Heltec-esp32"
 		},
 		{
-			"path": "../www"
+			"path": "../../Library/Arduino15"
 		}
 	],
-	"settings": {
-		"files.associations": {
-			"__bit_reference": "cpp",
-			"__hash_table": "cpp",
-			"__split_buffer": "cpp",
-			"__tree": "cpp",
-			"array": "cpp",
-			"deque": "cpp",
-			"forward_list": "cpp",
-			"initializer_list": "cpp",
-			"list": "cpp",
-			"map": "cpp",
-			"regex": "cpp",
-			"set": "cpp",
-			"string": "cpp",
-			"string_view": "cpp",
-			"unordered_map": "cpp",
-			"unordered_set": "cpp",
-			"valarray": "cpp",
-			"vector": "cpp",
-			"rope": "cpp",
-			"slist": "cpp",
-			"fstream": "cpp",
-			"locale": "cpp"
-		}
-	}
+	"settings": {}
 }

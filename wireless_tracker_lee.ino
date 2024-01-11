@@ -440,7 +440,7 @@ void setup()
 	Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
 
 	buzzer_off();
-	test_status = SD_TEST;
+	test_status = SD_INIT;
 }
 
 void loop()

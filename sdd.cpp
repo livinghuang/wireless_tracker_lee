@@ -19,6 +19,10 @@ void sd_init(void)
   Radio.Init(&RadioEvents);
   Radio.Sleep();
   SPI.end();
+
+  pinMode(Vext, OUTPUT);
+  digitalWrite(Vext, LOW);
+
   pinMode(RADIO_DIO_1, ANALOG);
   pinMode(RADIO_NSS, ANALOG);
   pinMode(RADIO_RESET, ANALOG);
@@ -30,9 +34,7 @@ void sd_init(void)
   pinMode(LORA_RST_PIN, OUTPUT);
   digitalWrite(LORA_RST_PIN, LOW);
 
-  pinMode(Vext, OUTPUT);
-  digitalWrite(Vext, HIGH);
-  delay(100);
+  delay(10);
   sdInitialized = sdd_setting();
 
   if (sdInitialized)
@@ -83,7 +85,7 @@ bool sdd_setting()
 {
   SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, CS_PIN);
 
-  if (!SD.begin(CS_PIN, SPI))
+  if (!SD.begin(CS_PIN, SPI, 4000000))
   {
     return false;
   }
