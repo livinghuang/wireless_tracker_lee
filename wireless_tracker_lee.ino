@@ -1,8 +1,8 @@
 
 //---------------------------------------------------------------------------------------//
-#define WIFI_TRK_VER_11 // If your board is Version 1.1, please choice WIFI_TRK_VER_11
+// #define WIFI_TRK_VER_11 // If your board is Version 1.1, please choice WIFI_TRK_VER_11
 
-// #define WIFI_TRK_VER_10 // If your board is Version 1.0, please choice WIFI_TRK_VER_10
+#define WIFI_TRK_VER_10 // If your board is Version 1.0, please choice WIFI_TRK_VER_10
 //---------------------------------------------------------------------------------------//
 
 #include "Arduino.h"
@@ -23,6 +23,8 @@ HT_st7736 st7735;
 #include "led.h"
 #include "button.h"
 #include "buzzer.h"
+#include "gsensor.h"
+#include "battery.h"
 
 typedef enum
 {
@@ -35,7 +37,12 @@ typedef enum
 	GPS_TEST,
 	LED_TEST,
 	BUZZER_TEST,
-	SD_TEST
+	SD_INIT,
+	SD_TEST,
+	MPU_TEST_INIT,
+	MPU_TEST,
+	BAT_INIT,
+	BAT_TEST
 } test_status_t;
 
 TinyGPSPlus gps;
@@ -433,7 +440,7 @@ void setup()
 	Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
 
 	buzzer_off();
-	test_status = LED_TEST;
+	test_status = SD_TEST;
 }
 
 void loop()
@@ -492,9 +499,48 @@ void loop()
 		buzzer_test();
 		break;
 	}
+	case SD_INIT:
+	{
+		sd_init();
+		extern bool sdInitialized;
+		if (sdInitialized)
+		{
+			test_status = SD_TEST;
+		}
+		break;
+	}
 	case SD_TEST:
 	{
 		sd_test();
+		break;
+	}
+	case MPU_TEST_INIT:
+	{
+		gsensor_init();
+		test_status = MPU_TEST;
+		break;
+	}
+	case MPU_TEST:
+	{
+		gsensor_test();
+		break;
+	}
+	case BAT_INIT:
+	{
+		battery_init();
+		st7735.st7735_fill_screen(ST7735_BLACK);
+		delay(100);
+		st7735.st7735_write_str(0, 0, (String) "BATTERY INIT");
+		test_status = BAT_TEST;
+		break;
+	}
+	case BAT_TEST:
+	{
+		st7735.st7735_fill_screen(ST7735_BLACK);
+		battery_test();
+		extern uint32_t batteryVoltage;
+		String battery_power = "BAT: " + (String)batteryVoltage;
+		st7735.st7735_write_str(0, 40, battery_power);
 		break;
 	}
 	default:

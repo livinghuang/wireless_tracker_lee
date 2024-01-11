@@ -12,7 +12,8 @@
 
 bool sdInitialized = false;
 bool sdd_setting();
-void sd_setting()
+
+void sd_init(void)
 {
   extern RadioEvents_t RadioEvents;
   Radio.Init(&RadioEvents);
@@ -26,13 +27,12 @@ void sd_setting()
   pinMode(LORA_MISO, ANALOG);
   pinMode(LORA_MOSI, ANALOG);
 
-  delay(100);
   pinMode(LORA_RST_PIN, OUTPUT);
   digitalWrite(LORA_RST_PIN, LOW);
 
   pinMode(Vext, OUTPUT);
   digitalWrite(Vext, HIGH);
-
+  delay(100);
   sdInitialized = sdd_setting();
 
   if (sdInitialized)
@@ -47,7 +47,6 @@ void sd_setting()
 
 void sd_test()
 {
-  sd_setting();
   // 主要迴圈程式碼放在這裡
   File file = SD.open("/test.txt");
   if (file)
