@@ -294,13 +294,21 @@ void interrupt_handle(void)
 void VextON(void)
 {
 	pinMode(Vext, OUTPUT);
+#ifdef WIFI_TRK_VER_11
 	digitalWrite(Vext, HIGH);
+#else
+	digitalWrite(Vext, LOW);
+#endif
 }
 
 void VextOFF(void) // Vext default OFF
 {
 	pinMode(Vext, OUTPUT);
+#ifdef WIFI_TRK_VER_11
 	digitalWrite(Vext, LOW);
+#else
+	digitalWrite(Vext, HIGH);
+#endif
 }
 
 void enter_deepsleep(void)
@@ -440,7 +448,7 @@ void setup()
 	Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
 
 	buzzer_off();
-	test_status = SD_INIT;
+	test_status = MPU_TEST_INIT;
 }
 
 void loop()

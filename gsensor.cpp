@@ -36,7 +36,11 @@ void gsensor_test(void)
 void gsensor_init()
 {
   pinMode(Vext, OUTPUT);
+#ifdef WIFI_TRK_VER_11
   digitalWrite(Vext, HIGH);
+#else
+  digitalWrite(Vext, LOW);
+#endif
 
   delay(10);
 

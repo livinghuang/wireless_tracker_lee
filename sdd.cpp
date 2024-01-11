@@ -21,7 +21,11 @@ void sd_init(void)
   SPI.end();
 
   pinMode(Vext, OUTPUT);
+#ifdef WIFI_TRK_VER_11
+  digitalWrite(Vext, HIGH);
+#else
   digitalWrite(Vext, LOW);
+#endif
 
   pinMode(RADIO_DIO_1, ANALOG);
   pinMode(RADIO_NSS, ANALOG);
@@ -78,7 +82,7 @@ void sd_test()
     Serial.println("Failed to write to file");
   }
 
-  delay(1000);
+  delay(500);
 }
 
 bool sdd_setting()
