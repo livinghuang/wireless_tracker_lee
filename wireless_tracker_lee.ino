@@ -1,55 +1,28 @@
-/*
- * HelTec Automation(TM) WIFI_LoRa_32 factory test code, witch includ
- * follow functions:
- *
- * - Basic OLED function test;
- *
- * - Basic serial port test(in baud rate 115200);
- *
- * - LED blink test;
- *
- * - WIFI connect and scan test;
- *
- * - LoRa Ping-Pong test (DIO0 -- GPIO26 interrup check the new incoming messages);
- *
- * - Timer test and some other Arduino basic functions.
- *
- * by Aaron.Lee from HelTec AutoMation, ChengDu, China
- * 成都惠利特自动化科技有限公司
- * https://heltec.org
- *
- * this project also realess in GitHub:
- * https://github.com/HelTecAutomation/Heltec_ESP32
- */
+
+//---------------------------------------------------------------------------------------//
+#define WIFI_TRK_VER_11 // If your board is Version 1.1, please choice WIFI_TRK_VER_11
+
+// #define WIFI_TRK_VER_10 // If your board is Version 1.0, please choice WIFI_TRK_VER_10
+//---------------------------------------------------------------------------------------//
 
 #include "Arduino.h"
 #include "WiFi.h"
 #include "LoRaWan_APP.h"
 #include <Wire.h>
+#ifdef WIFI_TRK_VER_11
 #include "HT_st7735.h"
+HT_st7735 st7735;
+#define VGNSS_CTRL Vext
+#else
+#include "HT_st7736.h"
+HT_st7736 st7735;
+#define VGNSS_CTRL 37
+#endif
 #include "HT_TinyGPS++.h"
-#include "FS.h"
-#include "SD.h"
-#include "SPI.h"
-#include "esp32-hal-rgb-led.h"
-// Define the GPIO pin where the WS2812 LED data input is connected
-#define LED_PIN 17 // Replace with your GPIO pin number
-#define BUZZER 46
-#define BUTTON 4
-#define SD_CS 21
-#define SD_SCK 9
-#define SD_MOSI 11
-#define SD_MISO 10
-#define LORA_RST_PIN 12
-
-enum LedColor
-{
-	RED,
-	GREEN,
-	BLUE,
-	WHITE,
-	OFF
-};
+#include "sdd.h"
+#include "led.h"
+#include "button.h"
+#include "buzzer.h"
 
 typedef enum
 {
@@ -65,9 +38,8 @@ typedef enum
 	SD_TEST
 } test_status_t;
 
-HT_st7735 st7735;
 TinyGPSPlus gps;
-#define VGNSS_CTRL Vext
+
 test_status_t test_status;
 uint16_t wifi_connect_try_num = 15;
 bool resendflag = false;
@@ -98,7 +70,7 @@ bool interrupt_flag = false;
 char txpacket[BUFFER_SIZE];
 char rxpacket[BUFFER_SIZE];
 
-static RadioEvents_t RadioEvents;
+RadioEvents_t RadioEvents;
 void OnTxDone(void);
 void OnTxTimeout(void);
 void OnRxDone(uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr);
@@ -287,6 +259,8 @@ void interrupt_handle(void)
 	if (interrupt_flag)
 	{
 		interrupt_flag = false;
+		Serial.println("interrupt handle");
+		Serial.flush();
 		if (digitalRead(0) == 0)
 		{
 			if (rxNumber < 2)
@@ -313,13 +287,13 @@ void interrupt_handle(void)
 void VextON(void)
 {
 	pinMode(Vext, OUTPUT);
-	digitalWrite(Vext, LOW);
+	digitalWrite(Vext, HIGH);
 }
 
 void VextOFF(void) // Vext default OFF
 {
 	pinMode(Vext, OUTPUT);
-	digitalWrite(Vext, HIGH);
+	digitalWrite(Vext, LOW);
 }
 
 void enter_deepsleep(void)
@@ -442,103 +416,10 @@ void gps_test(void)
 	}
 }
 
-void button_off(void)
-{
-	pinMode(BUZZER, OUTPUT);
-	digitalWrite(BUZZER, LOW);
-}
-
-void buzzer_test(void)
-{
-	pinMode(BUZZER, OUTPUT);
-	pinMode(BUTTON, INPUT);
-	if (digitalRead(BUTTON))
-	{
-		digitalWrite(BUZZER, HIGH);
-	}
-	else
-	{
-		digitalWrite(BUZZER, LOW);
-	}
-}
-
-void led_test(void)
-{
-	// Example: Set WS2812 LED to Green
-	neopixelWrite(LED_PIN, 255, 0, 0);
-	delay(1000);
-
-	// Example: Set WS2812 LED to Red
-	neopixelWrite(LED_PIN, 0, 255, 0);
-	delay(1000);
-
-	// Example: Set WS2812 LED to Blue
-	neopixelWrite(LED_PIN, 0, 0, 255);
-	delay(1000);
-
-	// Example: Set WS2812 LED to White
-	neopixelWrite(LED_PIN, 255, 255, 255);
-	delay(1000);
-}
-
-bool sd_setting()
-{
-	SPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
-	if (!SD.begin(SD_CS, SPI))
-	{
-		return false;
-	}
-	return true;
-}
-
-void sd_test(void)
-{
-
-	Radio.Sleep();
-	SPI.end();
-	pinMode(RADIO_DIO_1, ANALOG);
-	pinMode(RADIO_NSS, ANALOG);
-	pinMode(RADIO_RESET, ANALOG);
-	pinMode(RADIO_BUSY, ANALOG);
-	pinMode(LORA_CLK, ANALOG);
-	pinMode(LORA_MISO, ANALOG);
-	pinMode(LORA_MOSI, ANALOG);
-
-	pinMode(LORA_RST_PIN, OUTPUT);
-	digitalWrite(LORA_RST_PIN, LOW);
-
-	Radio.Sleep();
-	SPI.end();
-	pinMode(RADIO_DIO_1, ANALOG);
-	pinMode(RADIO_NSS, ANALOG);
-	pinMode(RADIO_RESET, ANALOG);
-	pinMode(RADIO_BUSY, ANALOG);
-	pinMode(LORA_CLK, ANALOG);
-	pinMode(LORA_MISO, ANALOG);
-	pinMode(LORA_MOSI, ANALOG);
-
-	pinMode(LORA_RST_PIN, OUTPUT);
-	digitalWrite(LORA_RST_PIN, LOW);
-
-	VextON();
-	delay(1000);
-
-	SPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
-
-	if (sd_setting())
-	{
-		Serial.println("SD卡初始化成功");
-	}
-	else
-	{
-		Serial.println("SD卡初始化失敗");
-	}
-}
-
 void setup()
 {
 	Serial.begin(115200);
-	// Mcu.begin();
+	Mcu.begin();
 	st7735.st7735_init();
 	st7735.st7735_fill_screen(ST7735_BLACK);
 
@@ -551,11 +432,8 @@ void setup()
 	Serial.printf("ESP32ChipID=%04X", (uint16_t)(chipid >> 32)); // print High 2 bytes
 	Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
 
-	button_off();
-
-	pinMode(LED, OUTPUT);
-	digitalWrite(LED, HIGH);
-	test_status = SD_TEST;
+	buzzer_off();
+	test_status = LED_TEST;
 }
 
 void loop()
