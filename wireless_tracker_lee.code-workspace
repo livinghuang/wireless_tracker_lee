@@ -5,9 +5,6 @@
 		},
 		{
 			"path": "../../Library/Arduino15/packages/Heltec-esp32"
-		},
-		{
-			"path": "../../Library/Arduino15"
 		}
 	],
 	"settings": {}

@@ -1,6 +1,6 @@
 #define _BUZZER_H
 #ifdef _BUZZER_H
-#define BUZZER 46
+#include "bsp.h"
 
 void buzzer_setting(void);
 

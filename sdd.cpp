@@ -1,14 +1,9 @@
+#include "bsp.h"
 #include "Arduino.h"
 #include "LoRaWan_APP.h"
 #include "FS.h"
 #include "SD.h"
 #include "SPI.h"
-
-#define CS_PIN 21
-#define SCK_PIN 9
-#define MOSI_PIN 11
-#define MISO_PIN 10
-#define LORA_RST_PIN 12
 
 bool sdInitialized = false;
 bool sdd_setting();

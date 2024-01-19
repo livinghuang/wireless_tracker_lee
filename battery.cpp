@@ -1,8 +1,6 @@
+#include "bsp.h"
 #include "Arduino.h"
 #include "battery.h"
-
-#define ADC_Ctrl 2
-#define ADC_IN 1
 
 /*!
  * ADC maximum value

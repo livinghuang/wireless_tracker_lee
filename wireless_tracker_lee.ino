@@ -1,23 +1,9 @@
-
-//---------------------------------------------------------------------------------------//
-// #define WIFI_TRK_VER_11 // If your board is Version 1.1, please choice WIFI_TRK_VER_11
-
-#define WIFI_TRK_VER_10 // If your board is Version 1.0, please choice WIFI_TRK_VER_10
-//---------------------------------------------------------------------------------------//
-
+#include "bsp.h"
 #include "Arduino.h"
 #include "WiFi.h"
 #include "LoRaWan_APP.h"
 #include <Wire.h>
-#ifdef WIFI_TRK_VER_11
-#include "HT_st7735.h"
-HT_st7735 st7735;
-#define VGNSS_CTRL Vext
-#else
-#include "HT_st7736.h"
-HT_st7736 st7735;
-#define VGNSS_CTRL 37
-#endif
+
 #include "HT_TinyGPS++.h"
 #include "sdd.h"
 #include "led.h"
@@ -26,6 +12,13 @@ HT_st7736 st7735;
 #include "gsensor.h"
 #include "battery.h"
 
+#ifdef WIFI_TRK_VER_11
+#include "HT_st7735.h"
+HT_st7735 st7735;
+#else
+#include "HT_st7736.h"
+HT_st7736 st7735;
+#endif
 typedef enum
 {
 	WIFI_CONNECT_TEST_INIT,
@@ -42,7 +35,8 @@ typedef enum
 	MPU_TEST_INIT,
 	MPU_TEST,
 	BAT_INIT,
-	BAT_TEST
+	BAT_TEST,
+	BUTTON_TEST
 } test_status_t;
 
 TinyGPSPlus gps;
@@ -448,7 +442,7 @@ void setup()
 	Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
 
 	buzzer_off();
-	test_status = MPU_TEST_INIT;
+	test_status = BUTTON_TEST;
 }
 
 void loop()
@@ -549,6 +543,12 @@ void loop()
 		extern uint32_t batteryVoltage;
 		String battery_power = "BAT: " + (String)batteryVoltage;
 		st7735.st7735_write_str(0, 40, battery_power);
+		break;
+	}
+	case BUTTON_TEST:
+	{
+		button_setting();
+		button_test();
 		break;
 	}
 	default:

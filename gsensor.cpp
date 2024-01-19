@@ -1,10 +1,8 @@
+#include "bsp.h"
 #include "Arduino.h"
 #include "LoRaWan_APP.h"
 #include "gsensor.h"
 #include "MPU6050.h"
-
-#define GSENSOR_I2C_SDA 16
-#define GSENSOR_I2C_SCK 15
 
 MPU6050_Base MPU;
 

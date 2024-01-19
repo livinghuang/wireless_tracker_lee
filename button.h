@@ -1,6 +1,6 @@
 #define _BUTTON_H
 #ifdef _BUTTON_H
-#define BUTTON 4
+#include "bsp.h"
 
 void button_setting(void);
 void button_test(void);
