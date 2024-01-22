@@ -1,9 +1,7 @@
-#define _BSP_H
-#ifdef _BSP_H
 //---------------------------------------------------------------------------------------//
-#define WIFI_TRK_VER_11 // If your board is Version 1.1, please choice WIFI_TRK_VER_11
+// #define WIFI_TRK_VER_11 // If your board is Version 1.1, please choice WIFI_TRK_VER_11
 
-// #define WIFI_TRK_VER_10 // If your board is Version 1.0, please choice WIFI_TRK_VER_10
+#define WIFI_TRK_VER_10 // If your board is Version 1.0, please choice WIFI_TRK_VER_10
 //---------------------------------------------------------------------------------------//
 
 #ifdef WIFI_TRK_VER_11
@@ -29,5 +27,3 @@ extern HT_st7736 st7735;
 #define GSENSOR_I2C_SCK 15
 #define BUZZER 46
 #define BUTTON 4
-
-#endif

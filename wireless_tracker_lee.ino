@@ -442,7 +442,7 @@ void setup()
 	Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
 
 	buzzer_off();
-	test_status = BUTTON_TEST;
+	test_status = MPU_TEST_INIT;
 }
 
 void loop()
