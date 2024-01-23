@@ -36,7 +36,8 @@ typedef enum
 	MPU_TEST,
 	BAT_INIT,
 	BAT_TEST,
-	BUTTON_TEST
+	BUTTON_TEST,
+	DI_TEST
 } test_status_t;
 
 TinyGPSPlus gps;
@@ -442,7 +443,7 @@ void setup()
 	Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
 
 	buzzer_off();
-	test_status = MPU_TEST_INIT;
+	test_status = BAT_INIT;
 }
 
 void loop()
@@ -551,7 +552,43 @@ void loop()
 		button_test();
 		break;
 	}
+	case DI_TEST:
+	{
+		pinMode(DIO1, INPUT);
+		pinMode(DIO2, INPUT);
+		pinMode(DIO3, INPUT);
+
+		st7735.st7735_fill_screen(ST7735_BLACK);
+		delay(50);
+		if (digitalRead(DIO1))
+		{
+			st7735.st7735_write_str(0, 0, (String) "DIO1 = 1");
+		}
+		else
+		{
+			st7735.st7735_write_str(0, 0, (String) "DIO1 = 0");
+		}
+		if (digitalRead(DIO2))
+		{
+			st7735.st7735_write_str(0, 25, (String) "DIO2 = 1");
+		}
+		else
+		{
+			st7735.st7735_write_str(0, 25, (String) "DIO2 = 0");
+		}
+		if (digitalRead(DIO3))
+		{
+			st7735.st7735_write_str(0, 45, (String) "DIO3 = 1");
+		}
+		else
+		{
+			st7735.st7735_write_str(0, 45, (String) "DIO3 = 0");
+		}
+		delay(50);
+		break;
+	}
 	default:
 		break;
 	}
+	delay(50);
 }

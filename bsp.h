@@ -27,3 +27,6 @@ extern HT_st7736 st7735;
 #define GSENSOR_I2C_SCK 15
 #define BUZZER 46
 #define BUTTON 4
+#define DIO1 5
+#define DIO2 6
+#define DIO3 7
