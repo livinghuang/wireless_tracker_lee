@@ -1,5 +1,5 @@
+#ifndef _LED_H
 #define _LED_H
-#ifdef _LED_H
 #include "bsp.h"
 #include "esp32-hal-rgb-led.h"
 

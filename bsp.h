@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------------//
-// #define WIFI_TRK_VER_11 // If your board is Version 1.1, please choice WIFI_TRK_VER_11
+#define WIFI_TRK_VER_11 // If your board is Version 1.1, please choice WIFI_TRK_VER_11
 
-#define WIFI_TRK_VER_10 // If your board is Version 1.0, please choice WIFI_TRK_VER_10
+// #define WIFI_TRK_VER_10 // If your board is Version 1.0, please choice WIFI_TRK_VER_10
 //---------------------------------------------------------------------------------------//
 
 #ifdef WIFI_TRK_VER_11
@@ -14,19 +14,37 @@ extern HT_st7736 st7735;
 #define VGNSS_CTRL 37
 #endif
 
+#define DIO1 5
+#define DIO2 6
+
+#define LED_PIN 17 // Replace with your GPIO pin number
+
+#define PSENSOR_I2C_SCL 15
+#define PSENSOR_I2C_SDA 16
+
+#define GSENSOR_I2C_SCL 15
+#define GSENSOR_I2C_SDA 16
+#define GSENSOR_INT 18
+
+#define SD_CD 21
+#define SD_MOSI 11
+#define SD_MISO 10
+
+#define BUZZER 46
+
+#define SD_SCK 9
+
+#define BUTTON 4
+
+#define ADC_5V 7
+
 #define ADC_Ctrl 2
 #define ADC_IN 1
-// Define the GPIO pin where the WS2812 LED data input is connected
-#define LED_PIN 17 // Replace with your GPIO pin number
+
 #define CS_PIN 21
 #define SCK_PIN 9
 #define MOSI_PIN 11
 #define MISO_PIN 10
 #define LORA_RST_PIN 12
-#define GSENSOR_I2C_SDA 16
-#define GSENSOR_I2C_SCK 15
-#define BUZZER 46
-#define BUTTON 4
-#define DIO1 5
-#define DIO2 6
-#define DIO3 7
+
+// #define DIO3 7 // no use in version 3.0, it connect to ADC_5V

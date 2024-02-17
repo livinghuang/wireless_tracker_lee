@@ -10,7 +10,9 @@
 #include "button.h"
 #include "buzzer.h"
 #include "gsensor.h"
+#include "psensor.h"
 #include "battery.h"
+#include "adc5v.h"
 
 #ifdef WIFI_TRK_VER_11
 #include "HT_st7735.h"
@@ -34,10 +36,13 @@ typedef enum
 	SD_TEST,
 	MPU_TEST_INIT,
 	MPU_TEST,
+	DPS_TEST_INIT,
+	DPS_TEST,
 	BAT_INIT,
 	BAT_TEST,
 	BUTTON_TEST,
-	DI_TEST
+	DI_TEST,
+	ADC_5V_TEST,
 } test_status_t;
 
 TinyGPSPlus gps;
@@ -443,7 +448,8 @@ void setup()
 	Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
 
 	buzzer_off();
-	test_status = BAT_INIT;
+
+	test_status = ADC_5V_TEST;
 }
 
 void loop()
@@ -528,6 +534,19 @@ void loop()
 		gsensor_test();
 		break;
 	}
+	case DPS_TEST_INIT:
+	{
+		dsp310_init();
+		Serial.flush();
+
+		test_status = DPS_TEST;
+		break;
+	}
+	case DPS_TEST:
+	{
+		dsp310_fetch();
+		break;
+	}
 	case BAT_INIT:
 	{
 		battery_init();
@@ -544,6 +563,18 @@ void loop()
 		extern uint32_t batteryVoltage;
 		String battery_power = "BAT: " + (String)batteryVoltage;
 		st7735.st7735_write_str(0, 40, battery_power);
+		delay(1000);
+		break;
+	}
+	case ADC_5V_TEST:
+	{
+		st7735.st7735_fill_screen(ST7735_BLACK);
+		delay(100);
+		adc5v_test();
+		st7735.st7735_write_str(0, 0, (String) "ADC 5V INIT");
+		extern uint32_t adc5Voltage;
+		String adc5_power = "V5: " + (String)adc5Voltage;
+		st7735.st7735_write_str(0, 40, adc5_power);
 		break;
 	}
 	case BUTTON_TEST:
@@ -556,7 +587,7 @@ void loop()
 	{
 		pinMode(DIO1, INPUT);
 		pinMode(DIO2, INPUT);
-		pinMode(DIO3, INPUT);
+		// pinMode(DIO3, INPUT);
 
 		st7735.st7735_fill_screen(ST7735_BLACK);
 		delay(50);
@@ -576,14 +607,14 @@ void loop()
 		{
 			st7735.st7735_write_str(0, 25, (String) "DIO2 = 0");
 		}
-		if (digitalRead(DIO3))
-		{
-			st7735.st7735_write_str(0, 45, (String) "DIO3 = 1");
-		}
-		else
-		{
-			st7735.st7735_write_str(0, 45, (String) "DIO3 = 0");
-		}
+		// if (digitalRead(DIO3))
+		// {
+		// 	st7735.st7735_write_str(0, 45, (String) "DIO3 = 1");
+		// }
+		// else
+		// {
+		// 	st7735.st7735_write_str(0, 45, (String) "DIO3 = 0");
+		// }
 		delay(50);
 		break;
 	}

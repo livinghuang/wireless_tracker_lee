@@ -42,14 +42,14 @@ void gsensor_init()
 
   delay(10);
 
-  Wire.begin(GSENSOR_I2C_SDA, GSENSOR_I2C_SCK, 400000);
-  Wire.setClock(400000);
+  Wire.begin(GSENSOR_I2C_SDA, GSENSOR_I2C_SCL, 100000);
+  Wire.setClock(100000);
 
   // start test
   // Initialize communication with the MPU6050
-  Wire.begin(); // For boards with dedicated SDA, SCL pins
+  // Wire.begin(); // For boards with dedicated SDA, SCL pins
   // Wire.begin(SDA_PIN, SCL_PIN); // Use this for boards without dedicated I2C pins
-  Wire.setClock(400000); // Set I2C clock speed to 400kHz
+  // Wire.setClock(400000); // Set I2C clock speed to 400kHz
 
   Serial.begin(115200);
   while (!Serial)
