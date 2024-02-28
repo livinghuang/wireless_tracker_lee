@@ -13,6 +13,7 @@
 #include "psensor.h"
 #include "battery.h"
 #include "adc5v.h"
+#include "ble.h"
 
 #ifdef WIFI_TRK_VER_11
 #include "HT_st7735.h"
@@ -41,6 +42,8 @@ typedef enum
 	BAT_INIT,
 	BAT_TEST,
 	BUTTON_TEST,
+	BLE_TEST_INIT,
+	BLE_TEST,
 	DI_TEST,
 	ADC_5V_TEST,
 } test_status_t;
@@ -183,79 +186,79 @@ void custom_delay(uint32_t time_ms)
 #endif
 }
 
-void wifi_connect_init(void)
-{
-	// Set WiFi to station mode and disconnect from an AP if it was previously connected
-	WiFi.disconnect(true);
-	custom_delay(100);
-	WiFi.mode(WIFI_STA);
-	WiFi.setAutoConnect(true);
-	WiFi.begin("Your WiFi SSID", "Your Password"); // fill in "Your WiFi SSID","Your Password"
-	st7735.st7735_write_str(0, 20, "WIFI Setup done");
-}
+// void wifi_connect_init(void)
+// {
+// 	// Set WiFi to station mode and disconnect from an AP if it was previously connected
+// 	WiFi.disconnect(true);
+// 	custom_delay(100);
+// 	WiFi.mode(WIFI_STA);
+// 	WiFi.setAutoConnect(true);
+// 	WiFi.begin("Your WiFi SSID", "Your Password"); // fill in "Your WiFi SSID","Your Password"
+// 	st7735.st7735_write_str(0, 20, "WIFI Setup done");
+// }
 
-bool wifi_connect_try(uint8_t try_num)
-{
-	uint8_t count;
-	while (WiFi.status() != WL_CONNECTED && count < try_num)
-	{
-		count++;
-		st7735.st7735_fill_screen(ST7735_BLACK);
-		st7735.st7735_write_str(0, 0, "wifi connecting...");
-		custom_delay(500);
-	}
-	if (WiFi.status() == WL_CONNECTED)
-	{
-		st7735.st7735_fill_screen(ST7735_BLACK);
-		st7735.st7735_write_str(0, 0, "wifi connect OK");
-		custom_delay(2500);
-		return true;
-	}
-	else
-	{
-		st7735.st7735_fill_screen(ST7735_BLACK);
-		st7735.st7735_write_str(0, 0, "wifi connect failed");
-		custom_delay(1000);
-		return false;
-	}
-}
+// bool wifi_connect_try(uint8_t try_num)
+// {
+// 	uint8_t count;
+// 	while (WiFi.status() != WL_CONNECTED && count < try_num)
+// 	{
+// 		count++;
+// 		st7735.st7735_fill_screen(ST7735_BLACK);
+// 		st7735.st7735_write_str(0, 0, "wifi connecting...");
+// 		custom_delay(500);
+// 	}
+// 	if (WiFi.status() == WL_CONNECTED)
+// 	{
+// 		st7735.st7735_fill_screen(ST7735_BLACK);
+// 		st7735.st7735_write_str(0, 0, "wifi connect OK");
+// 		custom_delay(2500);
+// 		return true;
+// 	}
+// 	else
+// 	{
+// 		st7735.st7735_fill_screen(ST7735_BLACK);
+// 		st7735.st7735_write_str(0, 0, "wifi connect failed");
+// 		custom_delay(1000);
+// 		return false;
+// 	}
+// }
 
-void wifi_scan(unsigned int value)
-{
-	unsigned int i;
-	WiFi.disconnect(); //
-	WiFi.mode(WIFI_STA);
-	st7735.st7735_fill_screen(ST7735_BLACK);
-	for (i = 0; i < value; i++)
-	{
-		st7735.st7735_write_str(0, 0, "Scan start...");
-		int n = WiFi.scanNetworks();
-		st7735.st7735_write_str(0, 30, "Scan done");
+// void wifi_scan(unsigned int value)
+// {
+// 	unsigned int i;
+// 	WiFi.disconnect(); //
+// 	WiFi.mode(WIFI_STA);
+// 	st7735.st7735_fill_screen(ST7735_BLACK);
+// 	for (i = 0; i < value; i++)
+// 	{
+// 		st7735.st7735_write_str(0, 0, "Scan start...");
+// 		int n = WiFi.scanNetworks();
+// 		st7735.st7735_write_str(0, 30, "Scan done");
 
-		if (n == 0)
-		{
-			st7735.st7735_fill_screen(ST7735_BLACK);
-			st7735.st7735_write_str(0, 0, "no network found");
-			custom_delay(2000);
-		}
-		else
-		{
-			st7735.st7735_fill_screen(ST7735_BLACK);
-			st7735.st7735_write_str(0, 0, (String)n);
-			st7735.st7735_write_str(30, 0, "networks found:");
+// 		if (n == 0)
+// 		{
+// 			st7735.st7735_fill_screen(ST7735_BLACK);
+// 			st7735.st7735_write_str(0, 0, "no network found");
+// 			custom_delay(2000);
+// 		}
+// 		else
+// 		{
+// 			st7735.st7735_fill_screen(ST7735_BLACK);
+// 			st7735.st7735_write_str(0, 0, (String)n);
+// 			st7735.st7735_write_str(30, 0, "networks found:");
 
-			custom_delay(2000);
+// 			custom_delay(2000);
 
-			for (int i = 0; (i < n) && (i < 0); ++i)
-			{
-				String str = (String)(i + 1) + ":" + (String)(WiFi.SSID(i)) + " (" + (String)(WiFi.RSSI(i)) + ")";
-				st7735.st7735_write_str(0, 0, str);
-				custom_delay(100);
-				st7735.st7735_fill_screen(ST7735_BLACK);
-			}
-		}
-	}
-}
+// 			for (int i = 0; (i < n) && (i < 0); ++i)
+// 			{
+// 				String str = (String)(i + 1) + ":" + (String)(WiFi.SSID(i)) + " (" + (String)(WiFi.RSSI(i)) + ")";
+// 				st7735.st7735_write_str(0, 0, str);
+// 				custom_delay(100);
+// 				st7735.st7735_fill_screen(ST7735_BLACK);
+// 			}
+// 		}
+// 	}
+// }
 
 void interrupt_GPIO0(void)
 {
@@ -448,8 +451,7 @@ void setup()
 	Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
 
 	buzzer_off();
-
-	test_status = ADC_5V_TEST;
+	test_status = BAT_INIT;
 }
 
 void loop()
@@ -457,26 +459,26 @@ void loop()
 	interrupt_handle();
 	switch (test_status)
 	{
-	case WIFI_CONNECT_TEST_INIT:
-	{
-		wifi_connect_init();
-		test_status = WIFI_CONNECT_TEST;
-	}
-	case WIFI_CONNECT_TEST:
-	{
-		if (wifi_connect_try(1) == true)
-		{
-			test_status = WIFI_SCAN_TEST;
-		}
-		wifi_connect_try_num--;
-		break;
-	}
-	case WIFI_SCAN_TEST:
-	{
-		wifi_scan(1);
-		test_status = LORA_TEST_INIT;
-		break;
-	}
+	// case WIFI_CONNECT_TEST_INIT:
+	// {
+	// 	wifi_connect_init();
+	// 	test_status = WIFI_CONNECT_TEST;
+	// }
+	// case WIFI_CONNECT_TEST:
+	// {
+	// 	if (wifi_connect_try(1) == true)
+	// 	{
+	// 		test_status = WIFI_SCAN_TEST;
+	// 	}
+	// 	wifi_connect_try_num--;
+	// 	break;
+	// }
+	// case WIFI_SCAN_TEST:
+	// {
+	// 	wifi_scan(1);
+	// 	test_status = LORA_TEST_INIT;
+	// 	break;
+	// }
 	case LORA_TEST_INIT:
 	{
 		lora_init();
@@ -583,6 +585,33 @@ void loop()
 		button_test();
 		break;
 	}
+	case BLE_TEST_INIT:
+	{
+		ble_init();
+		Serial.println("BLE Init Done!");
+		test_status = BLE_TEST;
+		break;
+	}
+	case BLE_TEST:
+	{
+		ble_process();
+		extern float bodyTemperature;
+		extern uint8_t heartRate, SpO2, watchBatteryLevel;
+		st7735.st7735_fill_screen(ST7735_BLACK);
+		delay(50);
+		String body_temp = "Body Temp: " + (String)bodyTemperature + "deg C";
+		st7735.st7735_write_str(0, 0, body_temp, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+		String heart_rate = "HR: " + (String)heartRate + "bpm";
+		st7735.st7735_write_str(0, 15, heart_rate, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+
+		String spo2 = "SpO2: " + (String)SpO2 + "%";
+		st7735.st7735_write_str(0, 30, spo2, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+		String battery_level = "Watch Bat: " + (String)watchBatteryLevel + "%";
+		st7735.st7735_write_str(0, 45, battery_level, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+		delay(1000);
+		break;
+	}
+
 	case DI_TEST:
 	{
 		pinMode(DIO1, INPUT);
@@ -607,14 +636,6 @@ void loop()
 		{
 			st7735.st7735_write_str(0, 25, (String) "DIO2 = 0");
 		}
-		// if (digitalRead(DIO3))
-		// {
-		// 	st7735.st7735_write_str(0, 45, (String) "DIO3 = 1");
-		// }
-		// else
-		// {
-		// 	st7735.st7735_write_str(0, 45, (String) "DIO3 = 0");
-		// }
 		delay(50);
 		break;
 	}

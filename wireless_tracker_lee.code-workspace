@@ -4,8 +4,14 @@
 			"path": "."
 		},
 		{
-			"path": "../siliqs/sq001"
+			"path": "../../../Library/Arduino15/packages/Heltec-esp32"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"array": "cpp",
+			"string": "cpp",
+			"string_view": "cpp"
+		}
+	}
 }
