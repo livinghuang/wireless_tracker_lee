@@ -451,7 +451,7 @@ void setup()
 	Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
 
 	buzzer_off();
-	test_status = BAT_INIT;
+	test_status = BLE_TEST_INIT;
 }
 
 void loop()
@@ -594,20 +594,33 @@ void loop()
 	}
 	case BLE_TEST:
 	{
-		ble_process();
 		extern float bodyTemperature;
 		extern uint8_t heartRate, SpO2, watchBatteryLevel;
+		extern char *ble_mac_address;
+		extern char paired_watch_mac_address[];
+		extern bool watch_done;
+		ble_process();
 		st7735.st7735_fill_screen(ST7735_BLACK);
 		delay(50);
-		String body_temp = "Body Temp: " + (String)bodyTemperature + "deg C";
-		st7735.st7735_write_str(0, 0, body_temp, Font_7x10, ST7735_WHITE, ST7735_BLACK);
-		String heart_rate = "HR: " + (String)heartRate + "bpm";
-		st7735.st7735_write_str(0, 15, heart_rate, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+		st7735.st7735_write_str(0, 0, (String) "Target Device:", Font_7x10, ST7735_WHITE, ST7735_BLACK);
+		st7735.st7735_write_str(0, 15, (String)paired_watch_mac_address, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+		if (watch_done)
+		{
+			watch_done = false;
+			String body_temp = "Body Temp: " + (String)bodyTemperature + "deg C";
+			st7735.st7735_write_str(0, 30, body_temp, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+			String heart_rate = "HR: " + (String)heartRate + "bpm";
+			st7735.st7735_write_str(0, 45, heart_rate, Font_7x10, ST7735_WHITE, ST7735_BLACK);
 
-		String spo2 = "SpO2: " + (String)SpO2 + "%";
-		st7735.st7735_write_str(0, 30, spo2, Font_7x10, ST7735_WHITE, ST7735_BLACK);
-		String battery_level = "Watch Bat: " + (String)watchBatteryLevel + "%";
-		st7735.st7735_write_str(0, 45, battery_level, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+			String spo2 = "; SpO2: " + (String)SpO2 + "%";
+			st7735.st7735_write_str(70, 45, spo2, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+			String battery_level = "Watch Bat: " + (String)watchBatteryLevel + "%";
+			st7735.st7735_write_str(0, 60, battery_level, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+		}
+		else
+		{
+			st7735.st7735_write_str(0, 30, (String) "NOT FOUND", Font_7x10, ST7735_WHITE, ST7735_BLACK);
+		}
 		delay(1000);
 		break;
 	}

@@ -20,8 +20,11 @@ int scanTime = 5; // In seconds
 #define SPO2_LENGTH 1
 #define LUNCH_LENGTH 1
 
+char paired_watch_mac_address[] = "d5:12:d8:96:00:31";
 float bodyTemperature;
 uint8_t heartRate, SpO2, watchBatteryLevel;
+char ble_mac_address[20];
+bool watch_done = false;
 
 struct ble_data
 {
@@ -52,7 +55,7 @@ void print_hex(uint8_t *raw, int len)
 void ble_parse(uint8_t *raw, int len)
 {
   /*
-  02 01 05 04 09 59 54 39 16 FF 180506170D178B0114798958640000016C00005F0007FFD512D89600310409595439
+  020105040959 543916FF 180506170D178B0114798958640000016C00005F0007FF D512D8960031 0409595439
   Device name (fixed) : YT9
   Project ID (fixed) : 543916FF
   Coming bytes is the payload example: 180506170D 178B 0114 79 89 58 640000016C00005F0007FFD512D89600310409595439
@@ -127,7 +130,20 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks
     {
       Serial.print("Found Device: ");
       Serial.println(advertisedDevice.toString().c_str());
-      ble_parse(advertisedDevice.getPayload(), advertisedDevice.getPayloadLength());
+      Serial.println("Device Address: ");
+      // Print the MAC address of the device
+
+      strcpy(ble_mac_address, advertisedDevice.getAddress().toString().c_str());
+      Serial.println(ble_mac_address);
+      if (strcmp(ble_mac_address, paired_watch_mac_address) == 0)
+      {
+        watch_done = true;
+        ble_parse(advertisedDevice.getPayload(), advertisedDevice.getPayloadLength());
+      }
+      else
+      {
+        Serial.println("Device not found!");
+      }
     }
   }
 };
