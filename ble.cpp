@@ -4,7 +4,7 @@
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
 
-int scanTime = 5; // In seconds
+int scanTime = 1; // In seconds
 
 #define TIMESTAMP_LENGTH 5
 #define STEPS_LENGTH 2
@@ -166,7 +166,7 @@ void ble_process()
 {
   // Start scanning for devices for a specified time
   BLEScan *pBLEScan = BLEDevice::getScan();
-  pBLEScan->start(scanTime, false);
+  pBLEScan->start(scanTime, true);
   Serial.println("Scan done!");
   pBLEScan->clearResults(); // Clear results to free memory
 }

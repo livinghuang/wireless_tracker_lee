@@ -441,16 +441,15 @@ void setup()
 	st7735.st7735_init();
 	st7735.st7735_fill_screen(ST7735_BLACK);
 
-	attachInterrupt(0, interrupt_GPIO0, FALLING);
+	// attachInterrupt(0, interrupt_GPIO0, FALLING);
 	resendflag = false;
 	deepsleepflag = false;
 	interrupt_flag = false;
 
-	chipid = ESP.getEfuseMac();																	 // The chip ID is essentially its MAC address(length: 6 bytes).
-	Serial.printf("ESP32ChipID=%04X", (uint16_t)(chipid >> 32)); // print High 2 bytes
-	Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
+	// chipid = ESP.getEfuseMac();																	 // The chip ID is essentially its MAC address(length: 6 bytes).
+	// Serial.printf("ESP32ChipID=%04X", (uint16_t)(chipid >> 32)); // print High 2 bytes
+	// Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
 
-	buzzer_off();
 	test_status = BLE_TEST_INIT;
 }
 
@@ -599,6 +598,13 @@ void loop()
 		extern char *ble_mac_address;
 		extern char paired_watch_mac_address[];
 		extern bool watch_done;
+		st7735.st7735_fill_screen(ST7735_BLACK);
+		delay(50);
+		st7735.st7735_write_str(0, 30, (String) "BLE SCAN INIT", Font_11x18, ST7735_WHITE, ST7735_BLACK);
+		st7735.st7735_write_str(0, 0, (String) "Target Device:", Font_7x10, ST7735_WHITE, ST7735_BLACK);
+		st7735.st7735_write_str(0, 15, (String)paired_watch_mac_address, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+
+		delay(50);
 		ble_process();
 		st7735.st7735_fill_screen(ST7735_BLACK);
 		delay(50);
@@ -619,9 +625,10 @@ void loop()
 		}
 		else
 		{
-			st7735.st7735_write_str(0, 30, (String) "NOT FOUND", Font_7x10, ST7735_WHITE, ST7735_BLACK);
+			st7735.st7735_write_str(0, 30, (String) "NOT FOUND", Font_11x18, ST7735_WHITE, ST7735_BLACK);
 		}
-		delay(1000);
+		delay(500);
+		st7735.st7735_fill_screen(ST7735_BLACK);
 		break;
 	}
 

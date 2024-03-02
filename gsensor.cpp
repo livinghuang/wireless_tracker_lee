@@ -51,16 +51,13 @@ void gsensor_init()
   // Wire.begin(SDA_PIN, SCL_PIN); // Use this for boards without dedicated I2C pins
   // Wire.setClock(400000); // Set I2C clock speed to 400kHz
 
-  Serial.begin(115200);
-  while (!Serial)
-    ; // Wait for serial port to connect
-
   MPU.initialize(); // Initialize the MPU6050
   if (!MPU.testConnection())
   {
     Serial.println("MPU6050 connection failed");
-    while (1)
-      ;
+    delay(1000);
+    // while (1)
+    //   ;
   }
   Serial.println("MPU6050 connection successful");
 }
