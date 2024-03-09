@@ -24,10 +24,11 @@ void dsp310_init()
   Serial.println("Init complete!");
 }
 
+float temperature;
+float pressure;
 void dsp310_fetch(void)
 {
-  float temperature;
-  float pressure;
+
   uint8_t oversampling = 7;
   int16_t ret;
   Serial.println();

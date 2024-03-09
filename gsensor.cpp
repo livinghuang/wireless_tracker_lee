@@ -6,10 +6,10 @@
 
 MPU6050_Base MPU;
 
+int16_t ax, ay, az;
+int16_t gx, gy, gz;
 void gsensor_test(void)
 {
-  int16_t ax, ay, az;
-  int16_t gx, gy, gz;
 
   MPU.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 

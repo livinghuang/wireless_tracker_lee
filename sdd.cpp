@@ -7,7 +7,7 @@
 
 bool sdInitialized = false;
 bool sdd_setting();
-
+bool sd_write_success = false;
 void sd_init(void)
 {
   extern RadioEvents_t RadioEvents;
@@ -67,6 +67,7 @@ void sd_test()
   File writeFile = SD.open("/test.txt", FILE_WRITE);
   if (writeFile)
   {
+    sd_write_success = true;
     String data = "Hello, SD card ^_^";
     writeFile.println(data);
     writeFile.close();
@@ -84,7 +85,7 @@ bool sdd_setting()
 {
   SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, CS_PIN);
 
-  if (!SD.begin(CS_PIN, SPI, 4000000))
+  if (!SD.begin(CS_PIN, SPI, 1000000))
   {
     return false;
   }

@@ -16,6 +16,7 @@ extern HT_st7736 st7735;
 
 #define DIO1 5
 #define DIO2 6
+#define PMC 6
 
 #define LED_PIN 17 // Replace with your GPIO pin number
 
@@ -46,5 +47,5 @@ extern HT_st7736 st7735;
 #define MOSI_PIN 11
 #define MISO_PIN 10
 #define LORA_RST_PIN 12
-
+#define SCREEN_BL 45
 // #define DIO3 7 // no use in version 3.0, it connect to ADC_5V

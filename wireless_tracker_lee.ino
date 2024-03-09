@@ -46,6 +46,7 @@ typedef enum
 	BLE_TEST,
 	DI_TEST,
 	ADC_5V_TEST,
+	TRACKER_V3_TEST
 } test_status_t;
 
 TinyGPSPlus gps;
@@ -157,9 +158,9 @@ void lora_init(void)
 										LORA_SYMBOL_TIMEOUT, LORA_FIX_LENGTH_PAYLOAD_ON,
 										0, true, 0, 0, LORA_IQ_INVERSION_ON, true);
 	state = STATE_TX;
-	st7735.st7735_fill_screen(ST7735_BLACK);
+	// st7735.st7735_fill_screen(ST7735_BLACK);
 	packet = "waiting lora data!";
-	st7735.st7735_write_str(0, 10, packet);
+	// st7735.st7735_write_str(0, 10, packet);
 }
 
 /********************************* lora  *********************************************/
@@ -259,10 +260,11 @@ void custom_delay(uint32_t time_ms)
 // 		}
 // 	}
 // }
-
+bool test_switch = false;
 void interrupt_GPIO0(void)
 {
 	interrupt_flag = true;
+	test_switch = true;
 }
 void interrupt_handle(void)
 {
@@ -333,8 +335,8 @@ void lora_status_handle(void)
 {
 	if (resendflag)
 	{
-		state = STATE_TX;
 		resendflag = false;
+		state = STATE_TX;
 	}
 
 	if (receiveflag && (state == LOWPOWER))
@@ -347,17 +349,17 @@ void lora_status_handle(void)
 			packet += rxpacket[i];
 			i++;
 		}
-		// packSize = "R_Size:";
-		// packSize += String(rxSize,DEC);
-		String packSize = "R_rssi:";
+		String packSize = "R_Size:";
+		packSize += String(rxSize, DEC);
+		packSize += "R_rssi:";
 		packSize += String(Rssi, DEC);
 		send_num = "send num:";
 		send_num += String(txNumber, DEC);
-		st7735.st7735_fill_screen(ST7735_BLACK);
-		delay(100);
-		st7735.st7735_write_str(0, 0, packet);
-		st7735.st7735_write_str(0, 40, packSize);
-		st7735.st7735_write_str(0, 60, send_num);
+		// st7735.st7735_fill_screen(ST7735_BLACK);
+		// delay(100);
+		// st7735.st7735_write_str(0, 24, packet);
+		// st7735.st7735_write_str(0, 36, packSize);
+		// st7735.st7735_write_str(0, 48, send_num);
 		if ((rxNumber % 2) == 0)
 		{
 			digitalWrite(LED, HIGH);
@@ -391,10 +393,10 @@ void gps_test(void)
 	pinMode(VGNSS_CTRL, OUTPUT);
 	digitalWrite(VGNSS_CTRL, HIGH);
 	Serial1.begin(115200, SERIAL_8N1, 33, 34);
-	Serial.println("gps_test");
-	st7735.st7735_fill_screen(ST7735_BLACK);
-	delay(100);
-	st7735.st7735_write_str(0, 0, (String) "gps_test");
+	// Serial.println("gps_test");
+	// st7735.st7735_fill_screen(ST7735_BLACK);
+	// delay(100);
+	// st7735.st7735_write_str(0, 0, (String) "gps_test");
 
 	while (1)
 	{
@@ -411,27 +413,78 @@ void gps_test(void)
 				{
 					continue;
 				}
-				st7735.st7735_fill_screen(ST7735_BLACK);
-				st7735.st7735_write_str(0, 0, (String) "gps_test");
-				String time_str = (String)gps.time.hour() + ":" + (String)gps.time.minute() + ":" + (String)gps.time.second() + ":" + (String)gps.time.centisecond();
-				st7735.st7735_write_str(0, 20, time_str);
+
+				String time_str = "TIME:" + (String)gps.time.hour() + ":" + (String)gps.time.minute() + ":" + (String)gps.time.second() + ":" + (String)gps.time.centisecond();
 				String latitude = "LAT: " + (String)gps.location.lat();
-				st7735.st7735_write_str(0, 40, latitude);
 				String longitude = "LON: " + (String)gps.location.lng();
-				st7735.st7735_write_str(0, 60, longitude);
+				st7735.st7735_write_str(110, 0, "GPS", Font_7x10, ST7735_MAGENTA, ST7735_BLACK);
+				st7735.st7735_write_str(0, 30, time_str, Font_7x10, ST7735_CYAN, ST7735_BLACK);
+				st7735.st7735_write_str(0, 42, latitude, Font_7x10, ST7735_CYAN, ST7735_BLACK);
+				st7735.st7735_write_str(0, 54, longitude, Font_7x10, ST7735_CYAN, ST7735_BLACK);
 
 				Serial.printf(" %02d:%02d:%02d.%02d", gps.time.hour(), gps.time.minute(), gps.time.second(), gps.time.centisecond());
+				Serial.println();
 				Serial.print("LAT: ");
 				Serial.print(gps.location.lat(), 6);
 				Serial.print(", LON: ");
 				Serial.print(gps.location.lng(), 6);
 				Serial.println();
-				delay(5000);
+				delay(1000);
 				while (Serial1.read() > 0)
 					;
 			}
+			if (interrupt_flag)
+			{
+				interrupt_flag = false;
+				break;
+			}
 		}
 	}
+}
+
+// uint32_t license[4] = {0x1C05BCF3, 0x37BC9B25, 0x1D9EB3A8, 0x1A3FC335};
+uint32_t license[4] = {0xC6E94E6B, 0xE1CFE85E, 0x6A321BC8, 0x942EACA9};
+
+void tracker_v3_test(void);
+
+void ble_test(void)
+{
+	extern float bodyTemperature;
+	extern uint8_t heartRate, SpO2, watchBatteryLevel;
+	extern char *ble_mac_address;
+	extern char paired_watch_mac_address[];
+	extern bool watch_done;
+	st7735.st7735_fill_screen(ST7735_BLACK);
+	delay(50);
+	st7735.st7735_write_str(0, 30, (String) "BLE SCAN INIT", Font_11x18, ST7735_WHITE, ST7735_BLACK);
+	st7735.st7735_write_str(0, 0, (String) "Target Device:", Font_7x10, ST7735_WHITE, ST7735_BLACK);
+	st7735.st7735_write_str(0, 15, (String)paired_watch_mac_address, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+
+	delay(50);
+	ble_process();
+	st7735.st7735_fill_screen(ST7735_BLACK);
+	delay(50);
+	st7735.st7735_write_str(0, 0, (String) "Target Device:", Font_7x10, ST7735_WHITE, ST7735_BLACK);
+	st7735.st7735_write_str(0, 15, (String)paired_watch_mac_address, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+	if (watch_done)
+	{
+		watch_done = false;
+		String body_temp = "Body Temp: " + (String)bodyTemperature + "deg C";
+		st7735.st7735_write_str(0, 30, body_temp, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+		String heart_rate = "HR: " + (String)heartRate + "bpm";
+		st7735.st7735_write_str(0, 45, heart_rate, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+
+		String spo2 = "; SpO2: " + (String)SpO2 + "%";
+		st7735.st7735_write_str(70, 45, spo2, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+		String battery_level = "Watch Bat: " + (String)watchBatteryLevel + "%";
+		st7735.st7735_write_str(0, 60, battery_level, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+	}
+	else
+	{
+		st7735.st7735_write_str(0, 30, (String) "NOT FOUND", Font_11x18, ST7735_WHITE, ST7735_BLACK);
+	}
+	delay(500);
+	st7735.st7735_fill_screen(ST7735_BLACK);
 }
 
 void setup()
@@ -441,16 +494,16 @@ void setup()
 	st7735.st7735_init();
 	st7735.st7735_fill_screen(ST7735_BLACK);
 
-	// attachInterrupt(0, interrupt_GPIO0, FALLING);
+	attachInterrupt(0, interrupt_GPIO0, FALLING);
 	resendflag = false;
 	deepsleepflag = false;
 	interrupt_flag = false;
 
-	// chipid = ESP.getEfuseMac();																	 // The chip ID is essentially its MAC address(length: 6 bytes).
-	// Serial.printf("ESP32ChipID=%04X", (uint16_t)(chipid >> 32)); // print High 2 bytes
-	// Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
+	chipid = ESP.getEfuseMac();																	 // The chip ID is essentially its MAC address(length: 6 bytes).
+	Serial.printf("ESP32ChipID=%04X", (uint16_t)(chipid >> 32)); // print High 2 bytes
+	Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
 
-	test_status = BLE_TEST_INIT;
+	test_status = TRACKER_V3_TEST;
 }
 
 void loop()
@@ -478,6 +531,11 @@ void loop()
 	// 	test_status = LORA_TEST_INIT;
 	// 	break;
 	// }
+	case TRACKER_V3_TEST:
+	{
+		tracker_v3_test();
+		break;
+	}
 	case LORA_TEST_INIT:
 	{
 		lora_init();
@@ -593,42 +651,7 @@ void loop()
 	}
 	case BLE_TEST:
 	{
-		extern float bodyTemperature;
-		extern uint8_t heartRate, SpO2, watchBatteryLevel;
-		extern char *ble_mac_address;
-		extern char paired_watch_mac_address[];
-		extern bool watch_done;
-		st7735.st7735_fill_screen(ST7735_BLACK);
-		delay(50);
-		st7735.st7735_write_str(0, 30, (String) "BLE SCAN INIT", Font_11x18, ST7735_WHITE, ST7735_BLACK);
-		st7735.st7735_write_str(0, 0, (String) "Target Device:", Font_7x10, ST7735_WHITE, ST7735_BLACK);
-		st7735.st7735_write_str(0, 15, (String)paired_watch_mac_address, Font_7x10, ST7735_WHITE, ST7735_BLACK);
-
-		delay(50);
-		ble_process();
-		st7735.st7735_fill_screen(ST7735_BLACK);
-		delay(50);
-		st7735.st7735_write_str(0, 0, (String) "Target Device:", Font_7x10, ST7735_WHITE, ST7735_BLACK);
-		st7735.st7735_write_str(0, 15, (String)paired_watch_mac_address, Font_7x10, ST7735_WHITE, ST7735_BLACK);
-		if (watch_done)
-		{
-			watch_done = false;
-			String body_temp = "Body Temp: " + (String)bodyTemperature + "deg C";
-			st7735.st7735_write_str(0, 30, body_temp, Font_7x10, ST7735_WHITE, ST7735_BLACK);
-			String heart_rate = "HR: " + (String)heartRate + "bpm";
-			st7735.st7735_write_str(0, 45, heart_rate, Font_7x10, ST7735_WHITE, ST7735_BLACK);
-
-			String spo2 = "; SpO2: " + (String)SpO2 + "%";
-			st7735.st7735_write_str(70, 45, spo2, Font_7x10, ST7735_WHITE, ST7735_BLACK);
-			String battery_level = "Watch Bat: " + (String)watchBatteryLevel + "%";
-			st7735.st7735_write_str(0, 60, battery_level, Font_7x10, ST7735_WHITE, ST7735_BLACK);
-		}
-		else
-		{
-			st7735.st7735_write_str(0, 30, (String) "NOT FOUND", Font_11x18, ST7735_WHITE, ST7735_BLACK);
-		}
-		delay(500);
-		st7735.st7735_fill_screen(ST7735_BLACK);
+		ble_test();
 		break;
 	}
 
@@ -663,4 +686,214 @@ void loop()
 		break;
 	}
 	delay(50);
+}
+
+void tracker_v3_test_init(void)
+{
+	st7735.st7735_fill_screen(ST7735_BLACK);
+	pinMode(BUTTON, INPUT_PULLUP);
+	pinMode(LED_PIN, OUTPUT);
+	pinMode(BUZZER, OUTPUT);
+	pinMode(ADC_Ctrl, OUTPUT);
+	digitalWrite(ADC_Ctrl, HIGH);
+	pinMode(DIO1, INPUT_PULLUP);
+	pinMode(PMC, INPUT_PULLUP);
+}
+
+void tracker_test_header(void)
+{
+	st7735.st7735_write_str(0, 0, (String) "Tracker Test", Font_7x10, ST7735_WHITE, ST7735_BLACK);
+	adc5v_test();
+	extern uint32_t adc5Voltage;
+	if (adc5Voltage > 2000)
+	{
+		st7735.st7735_write_str(0, 12, "USB", Font_7x10, ST7735_WHITE, ST7735_BLACK);
+	}
+	else
+	{
+		st7735.st7735_write_str(0, 12, "BATTERY", Font_7x10, ST7735_WHITE, ST7735_BLACK);
+	}
+	battery_test();
+	extern uint32_t batteryVoltage;
+	String battery_power = "BAT: " + (String)batteryVoltage;
+	st7735.st7735_write_str(80, 12, battery_power, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+}
+
+bool gsensor_initialed = false;
+bool sd_initialed = false;
+bool dsp_initialed = false;
+bool lora_initialed = false;
+bool ble_initialed = false;
+bool emc_button_pressed = false;
+bool dio1_button_pressed = false;
+bool dio2_button_pressed = false;
+void reset_test_status(void)
+{
+	gsensor_initialed = false;
+	sd_initialed = false;
+	dsp_initialed = false;
+	lora_initialed = false;
+	ble_initialed = false;
+}
+
+void tracker_v3_test(void)
+{
+	static int init = 0;
+	if (!init)
+	{
+		tracker_v3_test_init();
+		init++;
+	}
+	emc_button_pressed = !digitalRead(BUTTON);
+	if (emc_button_pressed)
+	{
+		Serial.println("Button Pressed");
+		digitalWrite(BUZZER, HIGH);
+	}
+	else
+	{
+		Serial.println("Button Released");
+		digitalWrite(BUZZER, LOW);
+	}
+
+	while (!digitalRead(DIO1))
+	{
+		st7735.st7735_fill_screen(ST7735_BLACK);
+		st7735.st7735_write_str(0, 20, "DIO1_PRESSED", Font_11x18, ST7735_MAGENTA, ST7735_BLACK);
+	}
+	while (!digitalRead(PMC))
+	{
+		st7735.st7735_fill_screen(ST7735_BLACK);
+		st7735.st7735_write_str(0, 20, "PMC_PRESSED", Font_11x18, ST7735_MAGENTA, ST7735_BLACK);
+	}
+
+	static int count = 2;
+	if (test_switch)
+	{
+		test_switch = false;
+		count++;
+	}
+	String string_buffer1;
+	String string_buffer2;
+
+	switch (count % 7)
+	{
+	case 0:
+		neopixelWrite(LED_PIN, 255, 0, 0);
+		digitalWrite(ST7735_LED_K_Pin, HIGH);
+		if (!gsensor_initialed)
+		{
+			reset_test_status();
+			gsensor_initialed = true;
+			st7735.st7735_fill_screen(ST7735_BLACK);
+			gsensor_init();
+		}
+		extern int16_t ax, ay, az;
+		extern int16_t gx, gy, gz;
+		gsensor_test();
+		string_buffer1 = "ax:" + (String)ax + " ay:" + (String)ay + " az:" + (String)az;
+		string_buffer2 = "gx:" + (String)gx + " gy:" + (String)gy + " gz:" + (String)gz;
+		tracker_test_header();
+		st7735.st7735_write_str(110, 0, "Gsnr", Font_7x10, ST7735_MAGENTA, ST7735_BLACK);
+		st7735.st7735_write_str(0, 30, string_buffer1, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+		st7735.st7735_write_str(0, 50, string_buffer2, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+		break;
+	case 1:
+		neopixelWrite(LED_PIN, 0, 255, 0);
+		if (!dsp_initialed)
+		{
+			reset_test_status();
+			gsensor_initialed = false;
+			dsp_initialed = true;
+			st7735.st7735_fill_screen(ST7735_BLACK);
+			dsp310_init();
+		}
+		extern float temperature;
+		extern float pressure;
+		dsp310_fetch();
+		string_buffer1 = "temperature:" + (String)temperature;
+		string_buffer2 = "pressure:" + (String)pressure;
+		tracker_test_header();
+		st7735.st7735_write_str(110, 0, "DSP310", Font_7x10, ST7735_MAGENTA, ST7735_BLACK);
+		st7735.st7735_write_str(0, 30, string_buffer1, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+		st7735.st7735_write_str(0, 50, string_buffer2, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+		break;
+	case 2:
+		neopixelWrite(LED_PIN, 0, 0, 255);
+		if (!lora_initialed)
+		{
+			reset_test_status();
+			lora_initialed = true;
+			st7735.st7735_fill_screen(ST7735_BLACK);
+			lora_init();
+		}
+		tracker_test_header();
+		st7735.st7735_write_str(110, 0, "Lora", Font_7x10, ST7735_MAGENTA, ST7735_BLACK);
+		st7735.st7735_write_str(0, 24, "TX:", Font_7x10, ST7735_GREEN, ST7735_BLACK);
+		st7735.st7735_write_str(0, 36, txpacket, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+		st7735.st7735_write_str(0, 48, "RX:", Font_7x10, ST7735_GREEN, ST7735_BLACK);
+		st7735.st7735_write_str(0, 60, rxpacket, Font_7x10, ST7735_WHITE, ST7735_BLACK);
+		lora_status_handle();
+		break;
+	case 3:
+		neopixelWrite(LED_PIN, 255, 255, 255);
+		st7735.st7735_fill_screen(ST7735_BLACK);
+		tracker_test_header();
+		gps_test();
+		break;
+	case 4:
+		neopixelWrite(LED_PIN, 255, 0, 255);
+		if (!ble_initialed)
+		{
+			reset_test_status();
+			ble_initialed = true;
+			st7735.st7735_fill_screen(ST7735_BLACK);
+			ble_init();
+			st7735.st7735_write_str(50, 20, "BLE", Font_16x26, ST7735_MAGENTA, ST7735_BLACK);
+			delay(1000);
+		}
+		ble_test();
+		break;
+	case 5:
+		neopixelWrite(LED_PIN, 128, 128, 128);
+		if (!sd_initialed)
+		{
+			reset_test_status();
+			sd_initialed = true;
+			st7735.st7735_fill_screen(ST7735_BLACK);
+			tracker_test_header();
+			sd_init();
+			extern bool sdInitialized;
+			if (sdInitialized)
+			{
+				st7735.st7735_write_str(0, 24, "SD Init Success", Font_7x10, ST7735_GREEN, ST7735_BLACK);
+			}
+			else
+			{
+				break;
+			}
+		}
+		tracker_test_header();
+		extern bool sd_write_success;
+		st7735.st7735_write_str(110, 0, "SD", Font_7x10, ST7735_MAGENTA, ST7735_BLACK);
+		if (sd_write_success)
+		{
+			st7735.st7735_write_str(0, 36, "Hello, SD card ^_^", Font_7x10, ST7735_GREEN, ST7735_BLACK);
+			st7735.st7735_write_str(0, 48, "Successfully wrote to file", Font_7x10, ST7735_GREEN, ST7735_BLACK);
+		}
+		sd_test();
+		break;
+	case 6:
+		neopixelWrite(LED_PIN, 0, 0, 0);
+		st7735.st7735_fill_screen(ST7735_BLACK);
+		tracker_test_header();
+		digitalWrite(ST7735_LED_K_Pin, HIGH);
+		st7735.st7735_write_str(0, 30, "Screen backlight on", Font_7x10, ST7735_MAGENTA, ST7735_BLACK);
+		delay(500);
+		digitalWrite(ST7735_LED_K_Pin, LOW);
+		st7735.st7735_write_str(0, 30, "Screen backlight off - you never see me", Font_7x10, ST7735_MAGENTA, ST7735_BLACK);
+		delay(500);
+		break;
+	}
+	delay(10);
 }
