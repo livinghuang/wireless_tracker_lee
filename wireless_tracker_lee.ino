@@ -14,6 +14,7 @@
 #include "battery.h"
 #include "adc5v.h"
 #include "ble.h"
+#include "lorawan.h"
 
 #ifdef WIFI_TRK_VER_11
 #include "HT_st7735.h"
@@ -35,6 +36,8 @@ typedef enum
 	BUZZER_TEST,
 	SD_INIT,
 	SD_TEST,
+	LORAWAN_INIT,
+	LORAWAN_TEST,
 	MPU_TEST_INIT,
 	MPU_TEST,
 	DPS_TEST_INIT,
@@ -503,7 +506,7 @@ void setup()
 	Serial.printf("ESP32ChipID=%04X", (uint16_t)(chipid >> 32)); // print High 2 bytes
 	Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
 
-	test_status = TRACKER_V3_TEST;
+	test_status = LORAWAN_INIT;
 }
 
 void loop()
@@ -534,6 +537,18 @@ void loop()
 	case TRACKER_V3_TEST:
 	{
 		tracker_v3_test();
+		break;
+	}
+	case LORAWAN_INIT:
+	{
+		lorawan_init();
+		test_status = LORAWAN_TEST;
+		break;
+	}
+	case LORAWAN_TEST:
+	{
+		lorawan_loop();
+		test_status = LORAWAN_TEST;
 		break;
 	}
 	case LORA_TEST_INIT:
