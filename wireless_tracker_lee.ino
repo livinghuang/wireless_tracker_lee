@@ -506,7 +506,7 @@ void setup()
 	Serial.printf("ESP32ChipID=%04X", (uint16_t)(chipid >> 32)); // print High 2 bytes
 	Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
 
-	test_status = LORAWAN_INIT;
+	test_status = LED_TEST;
 }
 
 void loop()
@@ -574,6 +574,7 @@ void loop()
 	}
 	case LED_TEST:
 	{
+		// only support for tracker module
 		led_test();
 		break;
 	}
@@ -795,6 +796,7 @@ void tracker_v3_test(void)
 	{
 	case 0:
 		neopixelWrite(LED_PIN, 255, 0, 0);
+
 		digitalWrite(ST7735_LED_K_Pin, HIGH);
 		if (!gsensor_initialed)
 		{
@@ -815,6 +817,7 @@ void tracker_v3_test(void)
 		break;
 	case 1:
 		neopixelWrite(LED_PIN, 0, 255, 0);
+
 		if (!dsp_initialed)
 		{
 			reset_test_status();
@@ -835,6 +838,7 @@ void tracker_v3_test(void)
 		break;
 	case 2:
 		neopixelWrite(LED_PIN, 0, 0, 255);
+
 		if (!lora_initialed)
 		{
 			reset_test_status();
@@ -871,6 +875,7 @@ void tracker_v3_test(void)
 		break;
 	case 5:
 		neopixelWrite(LED_PIN, 128, 128, 128);
+
 		if (!sd_initialed)
 		{
 			reset_test_status();
@@ -900,6 +905,7 @@ void tracker_v3_test(void)
 		break;
 	case 6:
 		neopixelWrite(LED_PIN, 0, 0, 0);
+
 		st7735.st7735_fill_screen(ST7735_BLACK);
 		tracker_test_header();
 		digitalWrite(ST7735_LED_K_Pin, HIGH);
