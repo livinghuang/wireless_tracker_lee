@@ -506,7 +506,7 @@ void setup()
 	Serial.printf("ESP32ChipID=%04X", (uint16_t)(chipid >> 32)); // print High 2 bytes
 	Serial.printf("%08X\n", (uint32_t)chipid);									 // print Low 4bytes.
 
-	test_status = LED_TEST;
+	test_status = TRACKER_V3_TEST;
 }
 
 void loop()
@@ -795,8 +795,7 @@ void tracker_v3_test(void)
 	switch (count % 7)
 	{
 	case 0:
-		neopixelWrite(LED_PIN, 255, 0, 0);
-
+		COLOR_LED((COLOR(count % 5)));
 		digitalWrite(ST7735_LED_K_Pin, HIGH);
 		if (!gsensor_initialed)
 		{
@@ -816,7 +815,7 @@ void tracker_v3_test(void)
 		st7735.st7735_write_str(0, 50, string_buffer2, Font_7x10, ST7735_WHITE, ST7735_BLACK);
 		break;
 	case 1:
-		neopixelWrite(LED_PIN, 0, 255, 0);
+		COLOR_LED((COLOR(count % 5)));
 
 		if (!dsp_initialed)
 		{
@@ -837,7 +836,7 @@ void tracker_v3_test(void)
 		st7735.st7735_write_str(0, 50, string_buffer2, Font_7x10, ST7735_WHITE, ST7735_BLACK);
 		break;
 	case 2:
-		neopixelWrite(LED_PIN, 0, 0, 255);
+		COLOR_LED((COLOR(count % 5)));
 
 		if (!lora_initialed)
 		{
@@ -855,13 +854,15 @@ void tracker_v3_test(void)
 		lora_status_handle();
 		break;
 	case 3:
-		neopixelWrite(LED_PIN, 255, 255, 255);
+		COLOR_LED((COLOR(count % 5)));
+
 		st7735.st7735_fill_screen(ST7735_BLACK);
 		tracker_test_header();
 		gps_test();
 		break;
 	case 4:
-		neopixelWrite(LED_PIN, 255, 0, 255);
+		COLOR_LED((COLOR(count % 5)));
+
 		if (!ble_initialed)
 		{
 			reset_test_status();
@@ -874,7 +875,7 @@ void tracker_v3_test(void)
 		ble_test();
 		break;
 	case 5:
-		neopixelWrite(LED_PIN, 128, 128, 128);
+		COLOR_LED((COLOR(count % 5)));
 
 		if (!sd_initialed)
 		{
@@ -904,7 +905,7 @@ void tracker_v3_test(void)
 		sd_test();
 		break;
 	case 6:
-		neopixelWrite(LED_PIN, 0, 0, 0);
+		COLOR_LED((COLOR(count % 5)));
 
 		st7735.st7735_fill_screen(ST7735_BLACK);
 		tracker_test_header();

@@ -1,16 +1,10 @@
 #include "esp32-hal-rgb-led.h"
 #include "bsp.h"
+#include "led.h"
 
 #define LED_DATA_LENGTH 27
 #define LED_NUMS 4
-enum COLOR
-{
-  OFF = 0,
-  RED = 2,
-  GREEN = 1,
-  BLUE = 3,
-  WHITE = 4
-};
+
 #define RMT_BUFFER_SIZE LED_DATA_LENGTH *LED_NUMS + 1
 rmt_data_t rmt_buffer[RMT_BUFFER_SIZE];
 int rmt_buffer_index = 0;
@@ -94,8 +88,32 @@ void setLedColor(enum COLOR color, int led_num)
   }
 }
 
-void printLED(COLOR color)
+void COLOR_LED(COLOR color)
 {
+
+#ifndef TRACKER_MODULE
+
+  int strength = 255;
+  switch (color)
+  {
+  case OFF:;
+    neopixelWrite(LED_PIN, 0, 0, 0);
+    break;
+  case RED:
+    neopixelWrite(LED_PIN, strength, 0, 0);
+    break;
+  case GREEN:
+    neopixelWrite(LED_PIN, 0, strength, 0);
+    break;
+  case BLUE:
+    neopixelWrite(LED_PIN, 0, 0, strength);
+    break;
+  case WHITE:
+    neopixelWrite(LED_PIN, strength, strength, strength);
+    break;
+  }
+
+#else
   static rmt_obj_t *rmt_send = NULL;
   float tick_rate_hz;
   memset(rmt_buffer, 0, sizeof(rmt_buffer));
@@ -123,12 +141,13 @@ void printLED(COLOR color)
   Serial.printf("rmt_buffer_index: %d \n", rmt_buffer_index);
   rmtWrite(rmt_send, rmt_buffer, rmt_buffer_index);
   delay(30);
+#endif
 }
 
 void led_test(void)
 {
   static int i = 0;
   i++;
-  printLED((COLOR(i % 5)));
+  COLOR_LED((COLOR(i % 5)));
   delay(1000);
 }

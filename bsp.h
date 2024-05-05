@@ -1,3 +1,5 @@
+#ifndef _BSP_H
+#define _BSP_H
 //---------------------------------------------------------------------------------------//
 #define WIFI_TRK_VER_11 // If your board is Version 1.1, please choice WIFI_TRK_VER_11
 
@@ -13,6 +15,8 @@ extern HT_st7735 st7735;
 extern HT_st7736 st7735;
 #define VGNSS_CTRL 37
 #endif
+
+#define TRACKER_MODULE
 
 #define DIO1 5
 #define DIO2 6
@@ -48,4 +52,6 @@ extern HT_st7736 st7735;
 #define MISO_PIN 10
 #define LORA_RST_PIN 12
 #define SCREEN_BL 45
+
 // #define DIO3 7 // no use in version 3.0, it connect to ADC_5V
+#endif
